@@ -6,6 +6,7 @@
 今回は埋まってるマスをbit全探索しているのでそこがボトルネックとなって
 
 初期化　O(2^{n ^ n})
+
 一手ごと　O(n ^ n)
 
 
@@ -13,6 +14,7 @@
 
 
 初期化　O((2 ^ n) * n)
+
 一手ごと　O(n * n)
 
 
@@ -24,9 +26,9 @@ libクレートなので、これのみで実行できないんですよね。�
 
 ```
 [dependencies]
-bingo = {git = "https://github.com/DirectKidman/bingo_prob_rust", branch="master"}
+bingo = {　git = "https://github.com/DirectKidman/bingo_prob_rust", branch="master"}
 ```
 
-これで大丈夫です。GUI、条件付き確率、などなど実装することはまだまだあります。
+これで大丈夫です。GUI、条件付き確率、などなど実装することはまだまだあります。Documentもコメントも全く書いてないですしおすし。
 心の余裕があれば、Pythonバージョンも実装して速度比較なんかしてみたいものですね。
 
