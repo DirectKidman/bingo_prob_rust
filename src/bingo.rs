@@ -1,3 +1,14 @@
+//!
+//! ## 例
+//! ```rust
+//! use bingo::bingo::Bingo;
+//!
+//! let mut b = Bingo::new(size,range);
+//! b.init(); // it is neccesary.
+//! b.next(number); // This result is printed to stdout.
+//! ```
+//!
+//! 内部変数は全てprivateなので、現在参照できません。
 use crate::util;
 
 #[allow(dead_code)]
@@ -159,7 +170,7 @@ impl Bingo {
             return;
         }
 
-        let new_bingo_card = self.bingo_cards[n_turn - 1][0] - self.bingo_cards[n_turn][0];
+        // let new_bingo_card = self.bingo_cards[n_turn - 1][0] - self.bingo_cards[n_turn][0];
 
         // let prob: f64 = new_bingo_card as f64 / self.all_cards as f64;
         let prob: f64 =
