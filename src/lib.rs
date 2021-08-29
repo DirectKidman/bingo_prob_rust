@@ -4,7 +4,10 @@
 //! これは１ビンゴ以上でた確率なので、ｎ回目に初めてビンゴが出る確率ではありません。いずれ実装しますが。
 
 pub mod bingo;
+pub mod faster;
 pub mod util;
+
+pub use bingo::Bingo;
 
 #[cfg(test)]
 mod tests {

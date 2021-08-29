@@ -1,7 +1,7 @@
 //!
 //! ## 例
 //! ```rust
-//! use bingo::bingo::Bingo;
+//! use bingo::Bingo;
 //!
 //! let mut b = Bingo::new(size,range);
 //! b.init(); // it is neccesary.
@@ -163,28 +163,29 @@ impl Bingo {
         self.bingo_cards.push(card_vec);
     }
 
-    fn show_bingo_probability(&self) {
+    fn show_bingo_probability(&self) -> u128 {
         let n_turn = self.called.len();
         if n_turn == 0 {
-            println!("Nothing to show");
-            return;
+            return 0u128;
         }
 
         // let new_bingo_card = self.bingo_cards[n_turn - 1][0] - self.bingo_cards[n_turn][0];
 
         // let prob: f64 = new_bingo_card as f64 / self.all_cards as f64;
-        let prob: f64 =
-            (self.all_cards as f64 - self.bingo_cards[n_turn][0] as f64) / self.all_cards as f64;
-        println!("Bingo Probability : {}", prob * 100f64);
+        // let prob: f64 =
+        //     (self.all_cards as f64 - self.bingo_cards[n_turn][0] as f64) / self.all_cards as f64;
+
+        let prob: u128 = self.all_cards - self.bingo_cards[n_turn][0];
+        prob
     }
 
     pub fn init(&mut self) {
         self.bit_search();
     }
 
-    pub fn next(&mut self, n: u128) {
+    pub fn next(&mut self, n: u128) -> u128 {
         self.call_number(n);
         self.count_cards();
-        self.show_bingo_probability();
+        self.show_bingo_probability()
     }
 }
