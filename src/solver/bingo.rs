@@ -1,11 +1,11 @@
 //!
 //! ## 例
 //! ```rust
-//! use bingo::Bingo;
+//! use bingo::FasterBingo as Bingo;
 //!
-//! let mut b = Bingo::new(size,range);
+//! let mut b = Bingo::new(5,15);
 //! b.init(); // it is neccesary.
-//! b.next(number); // This result is printed to stdout.
+//! b.play(1); // This result is printed to stdout.
 //! ```
 //!
 //! 内部変数は全てprivateなので、現在参照できません。
@@ -183,7 +183,7 @@ impl Bingo {
         self.bit_search();
     }
 
-    pub fn next(&mut self, n: u128) -> u128 {
+    pub fn play(&mut self, n: u128) -> u128 {
         self.call_number(n);
         self.count_cards();
         self.show_bingo_probability()

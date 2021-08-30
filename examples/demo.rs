@@ -1,7 +1,5 @@
-use bingo::faster::FasterBingo;
-use bingo::util::Permutation;
-use bingo::Bingo;
-use rand::prelude::*;
+use bingo::solver::faster::FasterBingo;
+use bingo::solver::bingo::Bingo;
 
 fn main() {
     // let mut results = vec![];
@@ -31,7 +29,6 @@ fn main() {
     //     );
     // }
     let mut b = FasterBingo::new(5, 15);
-    b.init();
     for n in numbers {
         b.play(n);
     }
@@ -47,7 +44,7 @@ fn bingo_prob(numbers: &[usize]) -> Vec<u128> {
 
     let res = (0..75)
         .into_iter()
-        .map(|x| b.next(numbers[x] as u128))
+        .map(|x| b.play(numbers[x] as u128))
         .collect();
     res
 }

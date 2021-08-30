@@ -24,7 +24,7 @@ impl FasterBingo {
         let bingo_cards_per_each_turn = vec![];
         let called_number = vec![];
 
-        FasterBingo {
+        let mut faster_bingo = FasterBingo {
             bingo_size,
             bingo_range,
             necessary_column_cells,
@@ -33,7 +33,10 @@ impl FasterBingo {
             bingo_cards_per_each_turn,
             called_number,
             perm_gen,
-        }
+        };
+        
+        faster_bingo.init();
+        faster_bingo
     }
 
     pub fn init(&mut self) {
