@@ -1,5 +1,8 @@
 use crate::util::Permutation;
 
+// This struct is for solving probability of bingos.
+// bingo_size: the number of a edge.
+//
 pub struct FasterBingo {
     bingo_size: u128,
     bingo_range: u128,
@@ -34,7 +37,7 @@ impl FasterBingo {
             called_number,
             perm_gen,
         };
-        
+
         faster_bingo.init();
         faster_bingo
     }
@@ -43,7 +46,7 @@ impl FasterBingo {
         let column_mask = (1 << self.bingo_size) - 1;
         let raw_mask = (1 << (2 * self.bingo_size)) - (1 << self.bingo_size);
         let cross_mask = !(column_mask + raw_mask);
-        
+
         for bit_bingos in 0..(1u128 << (2 * self.bingo_size + 2)) {
             let column = bit_bingos & column_mask;
             let raw = (bit_bingos & raw_mask) >> self.bingo_size;
@@ -111,7 +114,7 @@ impl FasterBingo {
                         break;
                     }
 
-                    if i == self.bingo_size / 2{
+                    if i == self.bingo_size / 2 {
                         tmp_cards *= self.perm_gen.perm(called, needed)
                             * self
                                 .perm_gen
