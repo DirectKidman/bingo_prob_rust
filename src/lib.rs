@@ -5,6 +5,8 @@
 //! 数字を 1 つずつ呼んでいき、その時点で 1 ビンゴ以上しているカードの枚数・確率を求める。
 //! (n 回目に *初めて* ビンゴする確率ではない点に注意。)
 //!
+//! 呼び出し順を全通り平均した確率は [`InclusionExclusionSolver::forecast`] で求められる。
+//!
 //! ## 例
 //! ```rust
 //! use bingo::InclusionExclusionSolver;
