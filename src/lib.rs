@@ -1,28 +1,23 @@
-//! このプログラムはビンゴの確率を求めるものです。
-//! ## 詳細
-//! ｎ個の数字が出た状態でビンゴがでる確率(%)が表示されます。
-//! これは１ビンゴ以上でた確率なので、ｎ回目に初めてビンゴが出る確率ではありません。いずれ実装しますが。
+//! ビンゴの確率を求めるクレート。
+//!
+//! `size` × `size` のカード (中央はフリー) で、各列に `range` 個ずつの数字
+//! (1 列目は `1..=range`、2 列目は `range+1..=2*range`、…) が割り当てられるとする。
+//! 数字を 1 つずつ呼んでいき、その時点で 1 ビンゴ以上しているカードの枚数・確率を求める。
+//! (n 回目に *初めて* ビンゴする確率ではない点に注意。)
+//!
+//! ## 例
+//! ```rust
+//! use bingo::InclusionExclusionSolver;
+//!
+//! let mut solver = InclusionExclusionSolver::new(5, 15);
+//! for number in 1..=75 {
+//!     solver.play(number);
+//! }
+//! // 全部の数字を呼べば、どのカードもビンゴしている。
+//! assert_eq!(solver.bingo_cards().last(), Some(&solver.all_cards()));
+//! ```
 
+pub mod math;
 pub mod solver;
-pub mod util;
 
-pub use crate::solver::bingo::Bingo;
-pub use crate::solver::faster::FasterBingo;
-
-#[cfg(test)]
-mod tests {
-    use crate::FasterBingo;
-    use crate::util;
-    #[test]
-    fn perm_check() {
-        println!("Test");
-        assert_eq!(util::permutation(15, 5), 360360u128);
-    }
-
-    #[test]
-    fn bingo_build_check() {
-        let mut b = FasterBingo::new(5, 15);
-        b.play(1);
-        assert_eq!(1, 1);
-    }
-}
+pub use crate::solver::{CellSearchSolver, InclusionExclusionSolver};
