@@ -5,7 +5,8 @@
 //! 数字を 1 つずつ呼んでいき、その時点で 1 ビンゴ以上しているカードの枚数・確率を求める。
 //! (n 回目に *初めて* ビンゴする確率ではない点に注意。)
 //!
-//! 呼び出し順を全通り平均した確率は [`InclusionExclusionSolver::forecast`] で求められる。
+//! 呼び出し順を全通り平均した確率は [`InclusionExclusionSolver::forecast`] / [`ColumnDpSolver::forecast`] で求められる。
+//! 7x7 以上は [`ColumnDpSolver`] を使うこと (他のソルバーは u128 で桁あふれする)。
 //!
 //! ## 例
 //! ```rust
@@ -22,4 +23,4 @@
 pub mod math;
 pub mod solver;
 
-pub use crate::solver::{CellSearchSolver, InclusionExclusionSolver};
+pub use crate::solver::{CellSearchSolver, ColumnDpSolver, InclusionExclusionSolver};
