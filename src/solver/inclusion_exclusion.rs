@@ -3,9 +3,18 @@
 //! - 初期化: `O(2^(2n+2) * n)` — ビンゴライン (2n+2 本) の部分集合を全列挙し、
 //!   それらを全て揃えるのに各列で何マス必要かを求める。
 //! - 1 手ごと: `O(4^n * n)` — 包除原理で「1 ライン以上揃っているカード」の枚数を数える。
+//!
+//! [`InclusionExclusionSolver::forecast`] で、ここから先の呼び出し順を全通り平均したときの
+//! 各ターンまでのビンゴ確率も厳密に求められる。
+
+use std::collections::HashMap;
+
+use num_bigint::{BigInt, BigUint};
+use num_rational::BigRational;
+use num_traits::{One, ToPrimitive, Zero};
 
 use super::to_percentages;
-use crate::math::PermutationTable;
+use crate::math::{binomial_row, PermutationTable};
 
 pub struct InclusionExclusionSolver {
     size: u128,
@@ -145,6 +154,94 @@ impl InclusionExclusionSolver {
         bingo
     }
 
+    /// ここから先の呼び出し順を全通り平均したときの、各ターン終了時点までにビンゴしている確率 (厳密値, 0〜1)。
+    ///
+    /// 戻り値の `i` 番目はターン `m + i` (`m` はこれまでに呼んだ個数) の値で、
+    /// `i = 0` は現在の確率、最後の要素は全ての数字を呼び終えた時点 (= 1)。
+    /// 何も呼んでいない状態で使えば、ゲーム全体での「n 回目までにビンゴする確率」になる。
+    /// 「ちょうど n 回目に初めてビンゴする確率」は隣り合う要素の差で求まる。
+    ///
+    /// ## 考え方
+    /// 残り `R` 個からさらに `j` 個呼んだ時点で呼ばれている数字の集合は、
+    /// 残りの `j` 個部分集合のどれもが等確率。列 `c` に新しく `b_c` 個入る場合の数は `Π C(残り_c, b_c)`。
+    /// これを包除原理の式 `Σ_L ± Π_c P(呼ばれた数_c, 必要数_c) P(range - 必要数_c, マス数_c - 必要数_c)`
+    /// に掛けて足すと、ライン集合 `L` ごとに列ごとの多項式の積になるので、
+    /// その `x^j` の係数を `C(R, j) * カード総数` で割れば確率になる。
+    pub fn forecast_exact(&self) -> Vec<BigRational> {
+        let n = self.size;
+        let center = n / 2;
+        let column_cells = |c: u128| if c == center { n - 1 } else { n };
+        let remaining: Vec<u128> = self
+            .called_per_column
+            .iter()
+            .map(|a| self.range - a)
+            .collect();
+        let total_remaining: u128 = remaining.iter().sum();
+
+        // polys[c][r]: 列 c でライン集合が r マス必要なときの、新しく呼ぶ個数 b についての多項式
+        //   Σ_b C(残り_c, b) P(呼ばれた数_c + b, r) P(range - r, マス数_c - r) x^b
+        let polys: Vec<Vec<Vec<BigUint>>> = (0..n)
+            .map(|c| {
+                let called = self.called_per_column[c as usize];
+                let binom = binomial_row(remaining[c as usize]);
+                (0..=column_cells(c))
+                    .map(|r| {
+                        let free =
+                            BigUint::from(self.perm.get(self.range - r, column_cells(c) - r));
+                        binom
+                            .iter()
+                            .enumerate()
+                            .map(|(b, w)| w * &free * self.perm.get(called + b as u128, r))
+                            .collect()
+                    })
+                    .collect()
+            })
+            .collect();
+
+        // 必要マス数が同じライン集合はまとめて、包除原理の符号付きの個数にする。
+        let mut groups: HashMap<&[u128], i64> = HashMap::new();
+        for (lines, line_sets) in self.required_cells.iter().enumerate() {
+            let sign = if lines % 2 == 1 { 1 } else { -1 };
+            for cells in line_sets {
+                *groups.entry(cells.as_slice()).or_default() += sign;
+            }
+        }
+
+        let mut numerators = vec![BigInt::zero(); total_remaining as usize + 1];
+        for (cells, multiplicity) in groups {
+            if multiplicity == 0 {
+                continue;
+            }
+            let product = (0..n).fold(vec![BigUint::one()], |acc, c| {
+                convolve(&acc, &polys[c as usize][cells[c as usize] as usize])
+            });
+            for (j, coef) in product.into_iter().enumerate() {
+                numerators[j] += BigInt::from(multiplicity) * BigInt::from(coef);
+            }
+        }
+
+        let all_cards = BigInt::from(self.all_cards);
+        binomial_row(total_remaining)
+            .into_iter()
+            .zip(numerators)
+            .map(|(orders, numerator)| {
+                assert!(
+                    numerator >= BigInt::zero(),
+                    "inclusion-exclusion produced a negative count"
+                );
+                BigRational::new(numerator, BigInt::from(orders) * &all_cards)
+            })
+            .collect()
+    }
+
+    /// [`forecast_exact`](Self::forecast_exact) を確率 (%) にしたもの。
+    pub fn forecast(&self) -> Vec<f64> {
+        self.forecast_exact()
+            .iter()
+            .map(|p| p.to_f64().unwrap() * 100.0)
+            .collect()
+    }
+
     /// カードの総数。
     pub fn all_cards(&self) -> u128 {
         self.all_cards
@@ -159,4 +256,17 @@ impl InclusionExclusionSolver {
     pub fn probabilities(&self) -> Vec<f64> {
         to_percentages(&self.bingo_cards, self.all_cards)
     }
+}
+
+fn convolve(a: &[BigUint], b: &[BigUint]) -> Vec<BigUint> {
+    let mut out = vec![BigUint::zero(); a.len() + b.len() - 1];
+    for (i, x) in a.iter().enumerate() {
+        if x.is_zero() {
+            continue;
+        }
+        for (j, y) in b.iter().enumerate() {
+            out[i + j] += x * y;
+        }
+    }
+    out
 }

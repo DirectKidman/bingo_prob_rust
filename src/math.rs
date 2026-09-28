@@ -1,4 +1,7 @@
-//! 順列計算のユーティリティ。
+//! 順列・組み合わせ計算のユーティリティ。
+
+use num_bigint::BigUint;
+use num_traits::One;
 
 /// 順列 `P(n, r) = n! / (n - r)!` を計算する。
 ///
@@ -7,6 +10,16 @@
 pub fn permutation(n: u128, r: u128) -> u128 {
     assert!(n >= r, "permutation: n ({}) must be >= r ({})", n, r);
     (0..r).map(|i| n - i).product()
+}
+
+/// 二項係数の行 `[C(n, 0), C(n, 1), ..., C(n, n)]`。
+pub fn binomial_row(n: u128) -> Vec<BigUint> {
+    let mut row = vec![BigUint::one()];
+    for k in 1..=n {
+        let next = &row[k as usize - 1] * (n - k + 1) / k;
+        row.push(next);
+    }
+    row
 }
 
 /// `P(n, r)` (`n <= max_n`, `r <= max_r`) を事前計算したテーブル。
@@ -48,6 +61,16 @@ mod tests {
     #[should_panic]
     fn permutation_panics_when_r_exceeds_n() {
         permutation(3, 4);
+    }
+
+    #[test]
+    fn binomial_row_values() {
+        let row: Vec<u64> = binomial_row(5)
+            .iter()
+            .map(|x| x.try_into().unwrap())
+            .collect();
+        assert_eq!(row, vec![1, 5, 10, 10, 5, 1]);
+        assert_eq!(binomial_row(75)[37].to_string(), "3446310324346630677300");
     }
 
     #[test]
